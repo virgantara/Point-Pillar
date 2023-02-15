@@ -10,9 +10,9 @@ from network import build_point_pillar_graph
 from processors import SimpleDataGenerator
 from readers import KittiDataReader
 
-tf.get_logger().setLevel("ERROR")
-
-DATA_ROOT = "../training"  # TODO make main arg
+tf.compat.v1.get_logger().setLevel("ERROR")
+tf.compat.v1.disable_v2_behavior()
+DATA_ROOT = "./training"  # TODO make main arg
 MODEL_ROOT = "./logs"
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     loss = PointPillarNetworkLoss(params)
 
-    optimizer = tf.keras.optimizers.Adam(lr=params.learning_rate, decay=params.decay_rate)
+    optimizer = tf.compat.v1.keras.optimizers.Adam(lr=params.learning_rate, decay=params.decay_rate)
 
     pillar_net.compile(optimizer, loss=loss.losses())
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     calibration_files = sorted(glob(os.path.join(DATA_ROOT, "calib", "*.txt")))
     assert len(lidar_files) == len(label_files) == len(calibration_files), "Input dirs require equal number of files."
     validation_len = int(0.3*len(label_files))
-    
+
     training_gen = SimpleDataGenerator(data_reader, params.batch_size, lidar_files[:-validation_len], label_files[:-validation_len], calibration_files[:-validation_len])
     validation_gen = SimpleDataGenerator(data_reader, params.batch_size, lidar_files[-validation_len:], label_files[-validation_len:], calibration_files[-validation_len:])
 
@@ -46,12 +46,12 @@ if __name__ == "__main__":
     epoch_to_decay = int(
         np.round(params.iters_to_decay / params.batch_size * int(np.ceil(float(len(label_files)) / params.batch_size))))
     callbacks = [
-        tf.keras.callbacks.TensorBoard(log_dir=log_dir),
-        tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(log_dir, "model.h5"),
+        tf.compat.v1.keras.callbacks.TensorBoard(log_dir=log_dir),
+        tf.compat.v1.keras.callbacks.ModelCheckpoint(filepath=os.path.join(log_dir, "model.h5"),
                                            monitor='val_loss', save_best_only=True),
-        tf.keras.callbacks.LearningRateScheduler(
+        tf.compat.v1.keras.callbacks.LearningRateScheduler(
             lambda epoch, lr: lr * 0.8 if ((epoch % epoch_to_decay == 0) and (epoch != 0)) else lr, verbose=True),
-        tf.keras.callbacks.EarlyStopping(patience=20, monitor='val_loss'),
+        tf.compat.v1.keras.callbacks.EarlyStopping(patience=20, monitor='val_loss'),
     ]
 
     try:

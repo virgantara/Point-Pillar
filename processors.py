@@ -1,8 +1,8 @@
 from typing import List
 import numpy as np
 import tensorflow as tf
-
-from tensorflow.python.keras.utils.data_utils import Sequence
+from keras.utils import Sequence
+# from tensorflow.python.keras.utils.data_utils import Sequence
 
 from config import Parameters
 from point_pillars import createPillars, createPillarsTarget
@@ -112,7 +112,7 @@ class DataProcessor(Parameters):
 
         # return a merged target view for all objects in the ground truth and get categorical labels
         sel = select_best_anchors(target)
-        ohe = tf.keras.utils.to_categorical(sel[..., 9], num_classes=self.nb_classes, dtype='float64')
+        ohe = tf.compat.v1.keras.utils.to_categorical(sel[..., 9], num_classes=self.nb_classes, dtype='float64')
 
         return sel[..., 0], sel[..., 1:4], sel[..., 4:7], sel[..., 7], sel[..., 8], ohe
 

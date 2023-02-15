@@ -8,3 +8,5 @@ cmake_example.egg-info/
 dist/
 logs/
 point_pillars.egg-info/
+training/**
+testing/**
